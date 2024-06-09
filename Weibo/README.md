@@ -2,7 +2,12 @@
 BERT is fine-tuned for fake account detection based on [this shared dataset](https://www.kaggle.com/datasets/bitandatom/social-network-fake-account-dataset
 ).
 
-## File Description
+## Data Formats
+- fake_account.csv: userindex \t post_content \n
+- legitimate_account.csv: userindex \t postdate \t retweet_count \t comment_count \t like_count \t post_content \n
+
+## Usage
+
 
 - [Installation](#installation)
 - [Usage](#usage)
@@ -19,5 +24,4 @@ Evaluation: $python3 evaluation.py
 
 
 Data Formats:
-fake_account.csv: userindex \t post_content \n
-legitimate_account.csv: userindex \t postdate \t retweet_count \t comment_count \t like_count \t post_content \n
+
