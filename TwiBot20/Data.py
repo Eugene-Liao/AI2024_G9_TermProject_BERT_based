@@ -46,7 +46,7 @@ class SocialMediaDataset(Dataset):
         labels = torch.tensor(int(item['label']), dtype=torch.long)
         return user_index, tokenized_chunks, labels
 
-class PostMetaDataDataset(Dataset):
+class PostMetadataDataset(Dataset):
     def __init__(self, dataframe):
         self.data = dataframe
 
@@ -98,7 +98,7 @@ class UserBatchSampler(Sampler):
         for batch in self.batches:
             yield batch
 
-class PostMetaDataBatchSampler(Sampler):
+class PostMetadataBatchSampler(Sampler):
     def __init__(self, dataset, batch_size):
         self.dataset = dataset
         self.batch_size = batch_size
@@ -171,7 +171,7 @@ def custom_collate(tokenizer):
         return batch_user_indices, batch_data, batch_labels
     return collate_fn
 
-def PostMetaDataCustom_collate(batch): 
+def PostMetadataCustom_collate(batch): 
 
     batch_user_indices = [item[0] for item in batch]
     batch_labels = torch.tensor([item[1] for item in batch], dtype=torch.long)

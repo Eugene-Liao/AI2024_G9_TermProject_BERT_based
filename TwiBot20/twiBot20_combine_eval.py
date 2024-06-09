@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
 import os
+import json
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import utils, Data
+import models
 
-from models import  BertForUserClassification
 from argparse import ArgumentParser, Namespace
 from tqdm import tqdm
 from tabulate import tabulate
@@ -23,7 +24,7 @@ def main(args):
         val_data = json.load(file)
         
     tokenizer = BertTokenizer.from_pretrained(args.pre_trained)
-    model = BertForUserClassification(model_name=args.pre_trained, num_labels=args.num_labels)
+    model = models.BertForUserClassification(model_name=args.pre_trained, num_labels=args.num_classes)
     
     state_dict = torch.load(args.fineTuned_path)
     model.load_state_dict(state_dict)
@@ -31,14 +32,14 @@ def main(args):
     
     max_length = 512
     batch_size = 32
-    val_df = postMetaDataPrePorcess(val_data, tokenizer, model, device, max_length, batch_size)s
+    val_df = utils.PostMetadataPreProcess(val_data, tokenizer, model, device, max_length, batch_size)
         
     # Tokenizing, batching, loading
     val_set = Data.PostMetadataDataset(val_df)
 
     batch_size = args.batch_size
-    val_batch_sampler = Data.PostMetaDataBatchSampler(val_set, batch_size)
-    val_loader = DataLoader(val_set, batch_sampler=val_batch_sampler, collate_fn=Data.PostMetaDataCustom_collate)
+    val_batch_sampler = Data.PostMetadataBatchSampler(val_set, batch_size)
+    val_loader = DataLoader(val_set, batch_sampler=val_batch_sampler, collate_fn=Data.PostMetadataCustom_collate)
 
     utils.combinEvaluation(args, val_loader)
 
@@ -46,7 +47,7 @@ def parse_args() -> Namespace:
     parser = ArgumentParser()
 
     #data
-    parser.add_argument("--val_path", type=str, default='. "./data/Twibot-20/test.json"', help='test file path')
+    parser.add_argument("--val_path", type=str, default="./data/Twibot-20/test.json", help='test file path')
     
     #model setting, hyperparameters
     parser.add_argument("--pre_trained", type=str, default='bert-base-uncased', help="Name of the pre-trained model (e.g., 'bert-base-uncased').")
@@ -64,8 +65,8 @@ def parse_args() -> Namespace:
     
     
     #result saving
-    parser.add_argument("--checkpoint_dir", type=str, default="./test_checkpoints", help="Dir to save the model checkpoints.")
-    parser.add_argument("--checkpoint_path", type=str, default=None, help="path to the model checkpoints.")
+    parser.add_argument("--checkpoint_dir", type=str, default="./checkpoints", help="Dir to save the model checkpoints.")
+    parser.add_argument("--checkpoint_path", type=str, default='./checkpoints/BERT_tweets_combine_256_epoch_15.pt', help="path to the model checkpoints.")
     
     
     args = parser.parse_args()

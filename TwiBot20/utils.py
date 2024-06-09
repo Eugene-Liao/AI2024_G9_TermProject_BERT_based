@@ -101,7 +101,7 @@ def get_bert_embeddings(texts, tokenizer, model, device, max_length, batch_size)
     return embeddings
 
 
-def postMetaDataPreProcess(data, tokenizer, model, device, max_length, batch_size):
+def PostMetadataPreProcess(data, tokenizer, model, device, max_length, batch_size):
     df = pd.DataFrame(data)
     df = df[['ID', 'tweet', 'profile', 'label']]
     df = df.rename(columns={"ID": "user_index", "tweet": "post", "profile": "profile", "label": "label"})

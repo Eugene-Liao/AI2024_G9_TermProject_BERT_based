@@ -6,7 +6,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 import utils, Data
 
-from models import  BertForUserClassification
 from argparse import ArgumentParser, Namespace
 from tqdm import tqdm
 from tabulate import tabulate
@@ -26,7 +25,7 @@ def main(args):
         val_data = json.load(file)
         
     tokenizer = BertTokenizer.from_pretrained(args.pre_trained)
-    model = BertForUserClassification(model_name=args.pre_trained, num_labels=args.num_labels)
+    model = models.BertForUserClassification(model_name=args.pre_trained, num_labels=args.num_classes)
     
     state_dict = torch.load(args.fineTuned_path)
     model.load_state_dict(state_dict)
@@ -34,19 +33,19 @@ def main(args):
     
     max_length = 512
     batch_size = 32
-    train_df = postMetaDataPreProcess(train_data, tokenizer, model, device, max_length, batch_size)
-    val_df = postMetaDataPrePorcess(val_data, tokenizer, model, device, max_length, batch_size)s
+    train_df = utils.PostMetadataPreProcess(train_data, tokenizer, model, device, max_length, batch_size)
+    val_df = utils.PostMetadataPreProcess(val_data, tokenizer, model, device, max_length, batch_size)s
         
     # Tokenizing, batching, loading
     train_set = Data.PostMetadataDataset(train_df)
     val_set = Data.PostMetadataDataset(val_df)
 
     batch_size = args.batch_size
-    train_batch_sampler = Data.PostMetaDataBatchSampler(train_set, batch_size)
-    val_batch_sampler = Data.PostMetaDataBatchSampler(val_set, batch_size)
+    train_batch_sampler = Data.PostMetadataBatchSampler(train_set, batch_size)
+    val_batch_sampler = Data.PostMetadataBatchSampler(val_set, batch_size)
 
-    train_loader = DataLoader(train_set, batch_sampler=train_batch_sampler, collate_fn=Data.PostMetaDataCustom_collate)
-    val_loader = DataLoader(val_set, batch_sampler=val_batch_sampler, collate_fn=Data.PostMetaDataCustom_collate)
+    train_loader = DataLoader(train_set, batch_sampler=train_batch_sampler, collate_fn=Data.PostMetadataCustom_collate)
+    val_loader = DataLoader(val_set, batch_sampler=val_batch_sampler, collate_fn=Data.PostMetadataCustom_collate)
 
     utils.combineTrain(args, train_loader, val_loader)
 
@@ -56,7 +55,7 @@ def parse_args() -> Namespace:
 
     #data
     parser.add_argument("--train_path", type=str, default =  "./data/Twibot-20/train.json", help='train file path') 
-    parser.add_argument("--val_path", type=str, default='. "./data/Twibot-20/test.json"', help='test file path')
+    parser.add_argument("--val_path", type=str, default="./data/Twibot-20/test.json", help='test file path')
     
     #model setting, hyperparameters
     parser.add_argument("--pre_trained", type=str, default='bert-base-uncased', help="Name of the pre-trained model (e.g., 'bert-base-uncased').")
