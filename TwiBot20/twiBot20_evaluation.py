@@ -6,7 +6,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 import utils, Data
 
-from models import  BertForUserClassification
 from argparse import ArgumentParser, Namespace
 from tqdm import tqdm
 from tabulate import tabulate
@@ -35,11 +34,10 @@ def parse_args() -> Namespace:
     parser = ArgumentParser()
 
     #data
-    parser.add_argument("--val_path", type=str, default='. "./data/Twibot-20/test.json"', help='test file path')
+    parser.add_argument("--val_path", type=str, default='./data/Twibot-20/test.json', help='test file path')
     
-
     #model setting, hyperparameters
-    parser.add_argument("--pre_trained", type=str, default='bert-base-chinese', help="Name of the pre-trained model (e.g., 'bert-base-uncased').")
+    parser.add_argument("--pre_trained", type=str, default='bert-base-uncased', help="Name of the pre-trained model (e.g., 'bert-base-uncased').")
     parser.add_argument("--num_classes", type=int, default=2, help="Number of output classes." )
     parser.add_argument("--lr", type=float, default=1e-5, help="Learning rate.")
     parser.add_argument("--num_epochs", type=int, default=1, help="Number of training epochs.")

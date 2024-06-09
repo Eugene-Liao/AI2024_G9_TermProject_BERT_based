@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
-from models import  BertForUserClassification, CombineModel
+from models import  BertForUserClassification, CombinedModel
 from tqdm import tqdm
 from tabulate import tabulate
 from transformers import BertModel, BertTokenizer, BertForSequenceClassification, get_linear_schedule_with_warmup, AutoTokenizer, AutoModel
@@ -290,7 +290,7 @@ def evaluate(args, val_loader):
     model.load_state_dict(state_dict)
     criterion = nn.CrossEntropyLoss()
     device = torch.device(args.device)
-
+ 
     model.to(device)
     model.eval()
     total_loss = 0
@@ -312,6 +312,10 @@ def evaluate(args, val_loader):
                 token_type_ids = inputs['token_type_ids'][valid_indices]
             else:
                 token_type_ids = None
+
+            if len(input_ids) == 0:
+               # Skip this batch if all inputs are empty
+               continue
 
             # Ensure the tensors are on the correct device
             input_ids = input_ids.to(device)
