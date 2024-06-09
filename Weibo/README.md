@@ -1,3 +1,14 @@
+#BERT-based model for Weibo Dataset
+BERT is fine-tuned for fake account detection based on the shared data set [Link text](https://www.kaggle.com/datasets/bitandatom/social-network-fake-account-dataset
+).
+
+##File Description
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+-[Utils.py]
 utils.py: data pre-processing, train() and evaluate()
 models.py: model class
 Data.py: modified Dataset class, Sampler and custom_collate()
