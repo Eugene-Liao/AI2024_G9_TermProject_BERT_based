@@ -11,9 +11,6 @@ BERT is fine-tuned for fake account detection based on the TwiBot-20 dataset. Ad
 - `$python3 twiBot20_evaluation.py` evaluatioon for the fine-tuned BERT
 - `$python3 twiBot20_combine_eval.py` evaluation for the combined moodel
 
-## Arguments
-
-
 ## Affilicated files
 - `utils.py`: data pre-processing, `train()` and `evaluate()`
 - `models.py`: model class
