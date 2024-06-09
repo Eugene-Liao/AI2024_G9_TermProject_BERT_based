@@ -11,13 +11,16 @@ class BertForUserClassification(nn.Module):
         self.dropout = nn.Dropout(0.3)
         self.classifier = nn.Linear(self.bert.config.hidden_size, num_labels)
 
-    def forward(self, input_ids, attention_mask, token_type_ids=None):
+    def forward(self, input_ids, attention_mask, token_type_ids=None, return_embeddings=False):
         outputs = self.bert(
             input_ids=input_ids,
             attention_mask=attention_mask,
             token_type_ids=token_type_ids
         )
-        pooled_output = outputs[1]
+        pooled_output = outputs[1] #capture the [CLS] token
+        if return_embeddings:
+            return pooled_output
+                
         pooled_output = self.dropout(pooled_output)
         logits = self.classifier(pooled_output)
         return logits

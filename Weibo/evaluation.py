@@ -6,7 +6,6 @@ import torch.nn.functional as F
 import torch.nn as nn
 import utils, Data
 
-from models import  BertForUserClassification
 from argparse import ArgumentParser, Namespace
 from tqdm import tqdm
 from tabulate import tabulate

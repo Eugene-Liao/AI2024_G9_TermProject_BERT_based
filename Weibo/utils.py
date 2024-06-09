@@ -3,6 +3,8 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+import re
+import json
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
@@ -15,6 +17,41 @@ from torch.utils.data import Dataset, DataLoader, Sampler
 from torch.optim import AdamW
 from torch.nn.utils.rnn import pad_sequence
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score, recall_score, f1_score
+
+# Function to remove emojis
+def remove_emojis(text):
+    """
+    Remove emojis from a given text.
+
+    Args:
+    text (str): Input text from which emojis need to be removed.
+
+    Returns:
+    str: Text with emojis removed.
+    """
+    if not isinstance(text, str):
+        return text
+    
+    emoji_pattern = re.compile(
+        "["
+        u"\U00002700-\U000027BF"  # Dingbats
+        u"\U0001F600-\U0001F64F"  # Emoticons
+        u"\U00002600-\U000026FF"  # Miscellaneous Symbols
+        u"\U0001F300-\U0001F5FF"  # Miscellaneous Symbols And Pictographs
+        u"\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+        u"\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+        u"\U0001F680-\U0001F6FF"  # Transport and Map Symbols
+        "]+", re.UNICODE
+    )
+    return emoji_pattern.sub(r'', text)
+
+# Function to remove URLs
+def remove_urls(text):
+    if not isinstance(text, str):
+        return text
+    return re.sub(r'http\S+|www.\S+', '', text)
+
 
 def dataProcess_simple(file_path, user_column, post_column, label):
     """
@@ -38,11 +75,36 @@ def dataProcess_simple(file_path, user_column, post_column, label):
     df = df[['user_index', 'post', 'label']]
 
     return df
+
+def tweetProcess(file_path):
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    df = pd.DataFrame(data)
+    df = df[['ID', 'tweet', 'label']]
+
+    #explode the 'tweet'column
+    df = df.explode('tweet')
+
+    #filter-out non-string tweets
+    df = df[df['tweet'].apply(lambda x: isinstance(x, str))]
+    
+    #remove url, emoji
+    df['tweet']= df['tweet'].apply(remove_emojis).apply(remove_urls)
+
+    #rename the columns
+    df = df.rename(columns={"ID": "user_index", "tweet": "post", "label": "label"})
+
+    #reset index for better reliability
+    df.reset_index(drop=True, inplace=True)
+
+    return df
+
     
 def train(args, train_loader, val_loader):
     torch.cuda.empty_cache()
     model = BertForUserClassification(model_name=args.pre_trained, num_labels=args.num_classes)
-    device = args.device
+    device = torch.device(args.device)
     model.to(device)
     optimizer = AdamW(model.parameters(), lr = args.lr)
     criterion = nn.CrossEntropyLoss()
@@ -56,7 +118,7 @@ def train(args, train_loader, val_loader):
     total_steps = len(train_loader) * num_epochs
     
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
-    accumulation_steps = args.num_accum_steps  # Adjust as needed
+    accumulation_steps = args.accumulation_steps  # Adjust as needed
     for epoch in range(num_epochs):
         model.train()
         total_loss = 0
@@ -121,7 +183,9 @@ def evaluate(args, val_loader):
     state_dict = torch.load(args.checkpoint_path)
     model.load_state_dict(state_dict)
     criterion = nn.CrossEntropyLoss()
-    
+    device = torch.device(args.device)
+
+    model.to(device)
     model.eval()
     total_loss = 0
     user_predictions = {}
@@ -174,14 +238,19 @@ def evaluate(args, val_loader):
         avg_preds = torch.tensor(preds).mean(dim=0)
         user_final_predictions[user_index] = torch.argmax(avg_preds).item()
 
-    # Compute accuracy
-    correct = 0
-    total = len(user_final_predictions)
+    # Compute metrics
+    true_labels = []
+    pred_labels = []
+
     for user_index, pred in user_final_predictions.items():
-        if pred == user_true_labels[user_index]:
-            correct += 1
-    accuracy = correct / total
+        true_labels.append(user_true_labels[user_index])
+        pred_labels.append(pred)
+
+    accuracy = sum([1 for true, pred in zip(true_labels, pred_labels) if true == pred]) / len(true_labels)
+    precision = precision_score(true_labels, pred_labels, average='weighted')
+    recall = recall_score(true_labels, pred_labels, average='weighted')
+    f1 = f1_score(true_labels, pred_labels, average='weighted')
 
     avg_loss = total_loss / len(val_loader)
-    print(f'Validation Loss: {avg_loss}, Validation Accuracy: {accuracy}')
-    return avg_loss, accuracy
+    print(f'Validation Loss: {avg_loss}, Validation Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1 Score: {f1}')
+    return avg_loss, accuracy, precision, recall, f1

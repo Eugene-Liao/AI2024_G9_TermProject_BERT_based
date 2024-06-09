@@ -43,7 +43,7 @@ class SocialMediaDataset(Dataset):
         item = self.data.iloc[idx]
         user_index = item['user_index']
         tokenized_chunks = tokenize_and_chunk_posts([item['post']], self.tokenizer, self.max_length)
-        labels = torch.tensor(item['label'], dtype=torch.long)
+        labels = torch.tensor(int(item['label']), dtype=torch.long)
         return user_index, tokenized_chunks, labels
 
 class UserBatchSampler(Sampler):
@@ -80,39 +80,41 @@ class UserBatchSampler(Sampler):
     def __iter__(self):
         for batch in self.batches:
             yield batch
-
-def custom_collate(batch):
-    # Filter out empty or dummy indices
-    batch = [item for item in batch if item[1]]  # Ensure tokenized_chunks is not empty
-
-    if not batch:
-        # Handle case where the entire batch might be empty after filtering
-        return [], {'input_ids': torch.tensor([]), 'attention_mask': torch.tensor([]), 'token_type_ids': torch.tensor([])}, torch.tensor([])
-
-    batch_user_indices = [item[0] for item in batch]
-    batch_tokenized_chunks = [item[1] for item in batch]
-    batch_labels = torch.tensor([item[2] for item in batch], dtype=torch.long)
-
-    input_ids = [chunk['input_ids'].squeeze(0) for user_chunks in batch_tokenized_chunks for chunk in user_chunks]
-    attention_masks = [chunk['attention_mask'].squeeze(0) for user_chunks in batch_tokenized_chunks for chunk in user_chunks]
-    if 'token_type_ids' in batch_tokenized_chunks[0][0]:
-        token_type_ids = [chunk['token_type_ids'].squeeze(0) for user_chunks in batch_tokenized_chunks for chunk in user_chunks]
-    else:
-        token_type_ids = None
-
-    # Pad sequences to the same length
-    input_ids_padded = pad_sequence(input_ids, batch_first=True, padding_value=tokenizer.pad_token_id)
-    attention_masks_padded = pad_sequence(attention_masks, batch_first=True, padding_value=0)
-    if token_type_ids is not None:
-        token_type_ids_padded = pad_sequence(token_type_ids, batch_first=True, padding_value=0)
-    else:
-        token_type_ids_padded = None
-
-    # Prepare the batch data
-    batch_data = {
-        'input_ids': input_ids_padded,
-        'attention_mask': attention_masks_padded,
-        'token_type_ids': token_type_ids_padded if token_type_ids is not None else None
-    }
-
-    return batch_user_indices, batch_data, batch_labels
+            
+def custom_collate(tokenizer):
+    def collate_fn(batch):
+        # Filter out empty or dummy indices
+        batch = [item for item in batch if item[1]]  # Ensure tokenized_chunks is not empty
+    
+        if not batch:
+            # Handle case where the entire batch might be empty after filtering
+            return [], {'input_ids': torch.tensor([]), 'attention_mask': torch.tensor([]), 'token_type_ids': torch.tensor([])}, torch.tensor([])
+    
+        batch_user_indices = [item[0] for item in batch]
+        batch_tokenized_chunks = [item[1] for item in batch]
+        batch_labels = torch.tensor([item[2] for item in batch], dtype=torch.long)
+    
+        input_ids = [chunk['input_ids'].squeeze(0) for user_chunks in batch_tokenized_chunks for chunk in user_chunks]
+        attention_masks = [chunk['attention_mask'].squeeze(0) for user_chunks in batch_tokenized_chunks for chunk in user_chunks]
+        if 'token_type_ids' in batch_tokenized_chunks[0][0]:
+            token_type_ids = [chunk['token_type_ids'].squeeze(0) for user_chunks in batch_tokenized_chunks for chunk in user_chunks]
+        else:
+            token_type_ids = None
+    
+        # Pad sequences to the same length
+        input_ids_padded = pad_sequence(input_ids, batch_first=True, padding_value=tokenizer.pad_token_id)
+        attention_masks_padded = pad_sequence(attention_masks, batch_first=True, padding_value=0)
+        if token_type_ids is not None:
+            token_type_ids_padded = pad_sequence(token_type_ids, batch_first=True, padding_value=0)
+        else:
+            token_type_ids_padded = None
+    
+        # Prepare the batch data
+        batch_data = {
+            'input_ids': input_ids_padded,
+            'attention_mask': attention_masks_padded,
+            'token_type_ids': token_type_ids_padded if token_type_ids is not None else None
+        }
+    
+        return batch_user_indices, batch_data, batch_labels
+    return collate_fn
