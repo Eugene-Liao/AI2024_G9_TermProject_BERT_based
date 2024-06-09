@@ -3,12 +3,12 @@ BERT is fine-tuned for fake account detection based on the TwiBot-20 dataset. Ad
 
 ## Data Formats
 Each user contains:
--'ID': the ID from Twitter identifying the user.
--'profile': the profile information obtained from Twitter API.
--'tweet': the latest 200 tweets of this user.
--'neighbor': random 20 followers and followings of this user.
--'domain': the domain of this user (domains: politics, business, entertainment and sports).
--'label': '1' represents it is a bot and '0' represents it is a human.
+- 'ID': the ID from Twitter identifying the user.
+- 'profile': the profile information obtained from Twitter API.
+- 'tweet': the latest 200 tweets of this user.
+- 'neighbor': random 20 followers and followings of this user.
+- 'domain': the domain of this user (domains: politics, business, entertainment and sports).
+- 'label': '1' represents it is a bot and '0' represents it is a human.
 
 ## Usage
 - `$python3 twiBot20_train_eval.py` fine-tune BERT
