@@ -7,7 +7,7 @@ BERT is fine-tuned for fake account detection based on [this shared dataset](htt
 - legitimate_account.csv: userindex \t postdate \t retweet_count \t comment_count \t like_count \t post_content \n
 
 ## Usage
-
+`inline code`
 
 - [Installation](#installation)
 - [Usage](#usage)
