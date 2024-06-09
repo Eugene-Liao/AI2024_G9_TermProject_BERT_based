@@ -13,7 +13,7 @@ BERT is fine-tuned for fake account detection based on [this shared dataset](htt
 ## Arguments
 
 
-# Affilicated files
+## Affilicated files
 - `utils.py`: data pre-processing, `train()` and `evaluate()`
 - `models.py`: model class
 - `Data.py`: modified Dataset class, Sampler and custom_collate()
