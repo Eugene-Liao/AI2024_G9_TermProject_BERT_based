@@ -1,5 +1,5 @@
 #BERT-based model for Weibo Dataset
-BERT is fine-tuned for fake account detection based on the shared data set [Link text](https://www.kaggle.com/datasets/bitandatom/social-network-fake-account-dataset
+BERT is fine-tuned for fake account detection based on the shared data set [Link](https://www.kaggle.com/datasets/bitandatom/social-network-fake-account-dataset
 ).
 
 ##File Description
