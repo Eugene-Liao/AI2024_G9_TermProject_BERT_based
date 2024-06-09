@@ -8,6 +8,7 @@ BERT is fine-tuned for fake account detection based on [this shared dataset](htt
 
 ## Usage
 `$python3 train_eval.py` for evaluation after each epoch of training
+`$python3 evaluation.py` for evaluation on a specific checkpoint
 
 - [Installation](#installation)
 - [Usage](#usage)
