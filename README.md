@@ -1,1 +1,1 @@
-# AI2024_TermProject
+# AI2024_TermProject_Weibo
