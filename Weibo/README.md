@@ -10,19 +10,10 @@ BERT is fine-tuned for fake account detection based on [this shared dataset](htt
 - `$python3 train_eval.py` for evaluation after each epoch of training
 - `$python3 evaluation.py` for evaluation on a specific checkpoint
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
--[Utils.py]
-utils.py: data pre-processing, train() and evaluate()
-models.py: model class
-Data.py: modified Dataset class, Sampler and custom_collate()
+## Arguments
 
 
-Evaluation: $python3 evaluation.py
--- during evaluation, the predicted logits belonging to the same user is averaged to make final classificatioon
-
-
-Data Formats:
-
+# Affilicated files
+- `utils.py`: data pre-processing, `train()` and `evaluate()`
+- `models.py`: model class
+- `Data.py`: modified Dataset class, Sampler and custom_collate()
